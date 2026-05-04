@@ -2,9 +2,13 @@ package service.impl;
 
 import dto.*;
 import entity.UrlMapping;
+import exception.DuplicateShortCodeException;
+import exception.ResourceNotFoundException;
+import exception.UrlExpiredException;
 import repository.UrlRepository;
 import service.UrlService;
 import util.Base62Encoder;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,21 +29,26 @@ public class UrlServiceImpl implements UrlService {
         UrlMapping entity = new UrlMapping();
         entity.setOriginalUrl(request.getUrl());
 
-        // Step 1: Save first to get ID (Oracle sequence)
+        // Step 1: Save first to generate ID (Oracle sequence)
         urlRepository.save(entity);
 
-        // Step 2: Generate short code using Base62
+        // Step 2: Generate short code
         String shortCode = Base62Encoder.encode(entity.getId());
 
-        // Optional: custom alias
-        if (request.getCustomAlias() != null && !request.getCustomAlias().isEmpty()) {
+        // 🔸 Custom Alias Handling
+        if (request.getCustomAlias() != null && !request.getCustomAlias().isBlank()) {
+
+            if (urlRepository.existsByShortCode(request.getCustomAlias())) {
+                throw new DuplicateShortCodeException("Custom alias already exists");
+            }
+
             shortCode = request.getCustomAlias();
         }
 
         entity.setShortCode(shortCode);
 
-        // Optional: expiry
-        if (request.getExpiryDays() != null) {
+        // 🔸 Expiry Handling
+        if (request.getExpiryDays() != null && request.getExpiryDays() > 0) {
             entity.setExpiryDate(LocalDateTime.now().plusDays(request.getExpiryDays()));
         }
 
@@ -58,15 +67,15 @@ public class UrlServiceImpl implements UrlService {
     public String getOriginalUrl(String shortCode) {
 
         UrlMapping entity = urlRepository.findByShortCode(shortCode)
-                .orElseThrow(() -> new RuntimeException("URL not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("URL not found"));
 
-        // Check expiry
+        // 🔸 Expiry Check
         if (entity.getExpiryDate() != null &&
                 entity.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("URL expired");
+            throw new UrlExpiredException("URL has expired");
         }
 
-        // Increment click count
+        // 🔸 Increment Click Count
         entity.setClickCount(entity.getClickCount() + 1);
         urlRepository.save(entity);
 
@@ -78,7 +87,7 @@ public class UrlServiceImpl implements UrlService {
     public StatsResponseDto getStats(String shortCode) {
 
         UrlMapping entity = urlRepository.findByShortCode(shortCode)
-                .orElseThrow(() -> new RuntimeException("URL not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("URL not found"));
 
         return new StatsResponseDto(
                 entity.getShortCode(),
