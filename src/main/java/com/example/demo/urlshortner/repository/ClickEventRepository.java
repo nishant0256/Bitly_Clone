@@ -1,6 +1,6 @@
-package repository;
+package com.example.demo.urlshortner.repository;
 
-import entity.ClickEvent;
+import com.example.demo.urlshortner.entity.ClickEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

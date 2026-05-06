@@ -1,4 +1,4 @@
-package exception;
+package com.example.demo.urlshortner.exception;
 
 import java.time.LocalDateTime;
 

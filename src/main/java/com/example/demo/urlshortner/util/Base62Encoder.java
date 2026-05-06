@@ -1,4 +1,4 @@
-package util;
+package com.example.demo.urlshortner.util;
 
 public class Base62Encoder {
 	

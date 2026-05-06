@@ -1,6 +1,6 @@
-package repository;
+package com.example.demo.urlshortner.repository;
 
-import entity.User;
+import com.example.demo.urlshortner.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

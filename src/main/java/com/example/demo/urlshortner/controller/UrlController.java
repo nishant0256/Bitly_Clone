@@ -1,9 +1,10 @@
-package controller;
+package com.example.demo.urlshortner.controller;
 
-import dto.UrlRequestDto;
-import dto.UrlResponseDto;
-import dto.StatsResponseDto;
-import service.UrlService;
+import com.example.demo.urlshortner.dto.UrlRequestDto;
+import com.example.demo.urlshortner.dto.UrlResponseDto;
+import com.example.demo.urlshortner.dto.StatsResponseDto;
+import io.swagger.v3.oas.annotations.Operation;
+import com.example.demo.urlshortner.service.UrlService;
 
 import jakarta.validation.Valid;
 
@@ -22,6 +23,7 @@ public class UrlController {
     private UrlService urlService;
 
     // 🔹 1. Create Short URL
+    @Operation(summary = "Create a short URL")
     @PostMapping("/api/shorten")
     public ResponseEntity<UrlResponseDto> shortenUrl(@Valid @RequestBody UrlRequestDto request) {
 

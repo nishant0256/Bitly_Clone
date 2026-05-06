@@ -1,4 +1,4 @@
-package entity;
+package com.example.demo.urlshortner.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

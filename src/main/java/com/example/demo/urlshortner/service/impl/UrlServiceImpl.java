@@ -1,13 +1,15 @@
-package service.impl;
+package com.example.demo.urlshortner.service.impl;
 
-import dto.*;
-import entity.UrlMapping;
-import exception.DuplicateShortCodeException;
-import exception.ResourceNotFoundException;
-import exception.UrlExpiredException;
-import repository.UrlRepository;
-import service.UrlService;
-import util.Base62Encoder;
+import com.example.demo.urlshortner.dto.StatsResponseDto;
+import com.example.demo.urlshortner.dto.UrlRequestDto;
+import com.example.demo.urlshortner.dto.UrlResponseDto;
+import com.example.demo.urlshortner.entity.UrlMapping;
+import com.example.demo.urlshortner.exception.DuplicateShortCodeException;
+import com.example.demo.urlshortner.exception.ResourceNotFoundException;
+import com.example.demo.urlshortner.exception.UrlExpiredException;
+import com.example.demo.urlshortner.repository.UrlRepository;
+import com.example.demo.urlshortner.service.UrlService;
+import com.example.demo.urlshortner.util.Base62Encoder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,12 +21,16 @@ public class UrlServiceImpl implements UrlService {
 
     @Autowired
     private UrlRepository urlRepository;
-
-    private static final String BASE_URL = "http://localhost:8080/";
+   private String BASE_URL = "http://localhost:6060/"; // Change to your domain in production
 
     // 🔹 1. Shorten URL
     @Override
     public UrlResponseDto shortenUrl(UrlRequestDto request) {
+
+        // 🔸 Validate input (extra safety)
+        if (request.getUrl() == null || request.getUrl().isBlank()) {
+            throw new IllegalArgumentException("URL cannot be empty");
+        }
 
         UrlMapping entity = new UrlMapping();
         entity.setOriginalUrl(request.getUrl());
@@ -32,7 +38,7 @@ public class UrlServiceImpl implements UrlService {
         // Step 1: Save first to generate ID (Oracle sequence)
         urlRepository.save(entity);
 
-        // Step 2: Generate short code
+        // Step 2: Generate short code using Base62 encoding of the ID
         String shortCode = Base62Encoder.encode(entity.getId());
 
         // 🔸 Custom Alias Handling
